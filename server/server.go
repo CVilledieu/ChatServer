@@ -4,22 +4,7 @@ import (
 	"fmt"
 	"log"
 	"net"
-	"net/http"
 )
-
-func StartServer() {
-	server := &http.Server{
-		Addr: ":8080",
-	}
-
-	http.HandleFunc("/", greeting)
-
-	server.ListenAndServe()
-}
-
-func greeting(w http.ResponseWriter, r *http.Request) {
-	w.Write([]byte("Hello, World!"))
-}
 
 func Server() {
 	listener, err := net.Listen("tcp", ":8080")
@@ -51,7 +36,7 @@ func handleClient(conn net.Conn) {
 		return
 	}
 
-	takeInput(request)
+	handleRequest(request)
 
 	response := []byte("Hello, World!")
 	_, err = conn.Write(response)
@@ -59,4 +44,8 @@ func handleClient(conn net.Conn) {
 		log.Println(err)
 		return
 	}
+}
+
+func handleRequest(request []byte) {
+	fmt.Println(string(request))
 }
