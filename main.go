@@ -6,5 +6,5 @@ import (
 
 func main() {
 	// This is a comment
-	server.StartServer()
+	server.Server()
 }
