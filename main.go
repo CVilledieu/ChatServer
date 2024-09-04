@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/CVilledieu/ChatServer/server"
+	server "github.com/CVilledieu/ChatServer/Server"
 )
 
 func main() {
