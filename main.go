@@ -37,18 +37,27 @@ func handler(w http.ResponseWriter, r *http.Request) {
 	}
 	defer conn.Close()
 	for {
-		messageType, r , err := conn.NextReader()
+		_, message, err := conn.ReadMessage()
 		if err != nil {
 			log.Println(err)
 			return
 		}
-		w, err := conn.NextWriter(messageType)
-		if err != nil {
-			log.Println(err)
-			return
-		}
-		
+		uploadMessage(message)
 
+		w, err := conn.NextWriter(websocket.BinaryMessage)
+		if err != nil {
+			log.Println(err)
+			return
+		}
+
+	}
+}
+
+func (u *User) uploadMessage(message []byte) {
 
 }
 
+type User struct {
+	room *Room
+	conn *websocket.Conn
+}
