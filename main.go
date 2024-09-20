@@ -7,6 +7,7 @@ Server will be responsible for listening to inital client connections, but then 
 */
 
 import (
+	"encoding/binary"
 	"log"
 	"net/http"
 
@@ -17,10 +18,8 @@ const (
 	PORT = ":8080"
 )
 
-func main() {
-
-	http.HandleFunc("/", handler)
-	log.Fatal(http.ListenAndServe(PORT, nil))
+type MainHub struct {
+	List ListOfHubs
 }
 
 var upgrader = websocket.Upgrader{
@@ -28,36 +27,45 @@ var upgrader = websocket.Upgrader{
 	WriteBufferSize: 1024,
 }
 
-func handler(w http.ResponseWriter, r *http.Request) {
-	log.Println("New connection")
-	conn, err := upgrader.Upgrade(w, r, nil)
+var openingMessage = []byte("Please enter the server Id:")
+
+func main() {
+	mainHub := createMainHub()
+
+	http.HandleFunc("/", mainHub.connect)
+	log.Fatal(http.ListenAndServe(PORT, nil))
+}
+
+func createMainHub() *MainHub {
+	return &MainHub{List: nil}
+}
+
+func (mh *MainHub) connect(w http.ResponseWriter, r *http.Request) {
+	connection, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
 		log.Println(err)
 		return
 	}
-	defer conn.Close()
-	for {
-		_, message, err := conn.ReadMessage()
-		if err != nil {
-			log.Println(err)
-			return
-		}
-		uploadMessage(message)
+	defer connection.Close()
 
-		w, err := conn.NextWriter(websocket.BinaryMessage)
+	err = connection.WriteMessage(0, openingMessage)
+	if err != nil {
+		log.Println(err)
+		return
+	}
+	for {
+
+		_, data, err := connection.ReadMessage()
 		if err != nil {
 			log.Println(err)
-			return
+			continue
 		}
+		checkForHub(data)
 
 	}
 }
 
-func (u *User) uploadMessage(message []byte) {
+func checkForHub(data []byte) {
+	id := binary.LittleEndian.Uint32(data)
 
-}
-
-type User struct {
-	room *Room
-	conn *websocket.Conn
 }
